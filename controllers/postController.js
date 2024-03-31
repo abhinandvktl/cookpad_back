@@ -10,7 +10,6 @@ exports.addPosts = async (req, res) => {
     const image = req.file.filename;
     // console.log(recipeImage);
     const { recipename, description } = req.body;
-    // console.log(`${userId} , ${recipename}, ${make} , ${recipeImage}`);
     try {
 
         // finding if same post is uploaded
@@ -33,10 +32,14 @@ exports.addPosts = async (req, res) => {
 
 
 // get all post
-
-exports.getAllPostController = async (req, res) => {
+exports.getallUsersPosts = async (req, res) => {
+    // const searchKey = req.query.search
+    // const query = {
+    //     recipename: { $regex: searchKey, $options: "i" }
+    // }
     try {
-        const allPost = await postdata.find()
+        // const allPost = await posts.find(query)
+        const allPost = await posts.find()
         res.status(200).json(allPost)
     }
     catch (err) {
@@ -44,3 +47,43 @@ exports.getAllPostController = async (req, res) => {
     }
 }
 
+// getuserposts
+exports.getUserPosts = async (req, res) => {
+    const userId = req.payload
+    try {
+        const userPosts = await posts.find({ userId })
+        res.status(200).json(userPosts)
+    } catch (err) {
+        res.status(401).json(err)
+    }
+}
+
+// edit post
+exports.editPost = async (req, res) => {
+    // get post id
+    const { id } = req.params
+    const userId = req.payload
+    const { recipename, description, image } = req.body
+    const uploadPostImage = req.file ? req.file.filename : image
+
+    try {
+        const updatePost = await posts.findByIdAndUpdate({ _id: id }, { recipename, description, image: uploadPostImage, userId }, { new: true })
+        await updatePost.save()
+        res.status(200).json(updatePost)
+    } catch (err) {
+        res.status(401).json(`Request failed Error:${err}`)
+    }
+}
+
+
+// delete posts
+exports.deletepost = async (req, res) => {
+
+    const { id } = req.params
+    try {
+        const removePost = await posts.findByIdAndDelete({ _id: id })
+        res.status(200).json(removePost)
+    } catch (err) {
+        res.status(401).json(err)
+    }
+}
